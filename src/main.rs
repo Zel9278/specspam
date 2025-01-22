@@ -1,7 +1,28 @@
-use std::thread;
+use std::{thread,env};
 use rand::{Rng, SeedableRng};
 
 fn main() {
+    let args: Vec<String> = env::args()
+        .skip(1)
+        .collect();
+
+    let mut disable_cpu = false;
+    let mut disable_memory = false;
+
+    for arg in args {
+        if arg == "--disable-cpu" {
+            disable_cpu = true;
+        } else if arg == "--disable-memory" {
+            disable_memory = true;
+        }
+    }
+
+    if disable_cpu && disable_memory {
+        println!("You can't disable both cpu and memory at the same time.");
+        return;
+    }
+
+    if !disable_memory {
         let _handle = thread::spawn(|| {
             println!("Thread 1 - Memory: [MEMORY BURNER] Hello from a new thread!");
             let mut buffer = Vec::new();
@@ -15,8 +36,11 @@ fn main() {
             }
         
             println!("[MEMORY BURNER] Buffer size: {} bytes", buffer.len());
-        });
+        });   
+    }
 
+
+    if !disable_cpu {
         let _handle2 = thread::spawn(|| {
             println!("Thread 2 - CPU: [CPU BURNER] Hello from another new thread!");
             let cpus = num_cpus::get();
@@ -35,7 +59,8 @@ fn main() {
                 }
             }
         });
-    
-        std::thread::sleep(std::time::Duration::MAX);
-        println!("[MAIN] Back in the main thread.");
+    }
+
+    std::thread::sleep(std::time::Duration::MAX);
+    println!("[MAIN] Back in the main thread.");
 }
